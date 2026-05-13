@@ -1,4 +1,6 @@
 // src/bot/handlers/ticketHandler.js
+const { getGuildConfig } = require('../../database/config');
+
 const {
   ChannelType, PermissionFlagsBits, EmbedBuilder,
   ActionRowBuilder, ButtonBuilder, ButtonStyle,
@@ -209,7 +211,36 @@ async function closeTicket(interaction, ticketId, reason = null) {
   if (reason) embed.addFields({ name: '📝 Razón', value: reason });
 
   // Send to transcript channel
-  if (config.transcript_channel) {
+// Obtener config desde Supabase
+const cloudConfig = await getGuildConfig(guild.id);
+
+// Elegir canal (prioridad: Supabase → SQLite)
+const transcriptChannelId =
+  cloudConfig?.transcript_channel_id || config.transcript_channel;
+
+if (transcriptChannelId) {
+  const tchan = guild.channels.cache.get(transcriptChannelId);
+
+  if (tchan) {
+    tchan.send({
+      embeds: [new EmbedBuilder()
+        .setColor(0x5865F2)
+        .setTitle(`📄 Transcripción - Ticket #${String(ticket.ticket_number).padStart(4,'0')}`)
+        .addFields(
+          { name: '👤 Usuario', value: `<@${ticket.creator_id}>`, inline: true },
+          { name: '🔒 Cerrado por', value: `${user}`, inline: true },
+          { name: '📁 Categoría', value: category?.name || 'N/A', inline: true },
+          { name: '💬 Mensajes', value: `${messageCount}`, inline: true }
+        )
+        .setTimestamp()
+      ],
+      files: [attachment]
+    }).catch(() => {});
+  }
+}
+
+if (cloudConfig?.transcript_channel_id) {
+  const tchan = guild.channels.cache.get(cloudConfig.transcript_channel_id);
     const tchan = guild.channels.cache.get(config.transcript_channel);
     if (tchan) {
       tchan.send({

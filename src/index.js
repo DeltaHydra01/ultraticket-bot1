@@ -134,7 +134,7 @@ client.login(process.env.DISCORD_TOKEN).catch(err => {
 
 // Start dashboard alongside bot
 if (process.env.START_DASHBOARD !== 'false') {
-  require('./dashboard/server');
+  require('./dashboard/server')(client);
 }
 
 module.exports = client;
