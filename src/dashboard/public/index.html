@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UltraTicket — Bot de Tickets Premium Gratuito</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #0f0f1a;
+  --surface: #13131f;
+  --surface2: #1a1a2e;
+  --border: rgba(255,255,255,.07);
+  --text: #e8e8f0;
+  --muted: #6b7280;
+  --accent: #7c5cfc;
+  --accent2: #5eead4;
+  --accent3: #f472b6;
+  --glow: rgba(124,92,252,.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; overflow-x:hidden; }
+
+/* NAV */
+nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:20px 40px; display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(20px); border-bottom:1px solid var(--border); background:rgba(10,10,15,.8); }
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; display:flex; align-items:center; gap:10px; }
+.logo span { background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.nav-links { display:flex; gap:32px; }
+.nav-links a { color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; transition:.2s; }
+.nav-links a:hover { color:var(--text); }
+.nav-cta { display:flex; gap:12px; }
+.btn-ghost { padding:10px 20px; border:1px solid var(--border); border-radius:10px; color:var(--text); text-decoration:none; font-size:14px; font-weight:500; transition:.2s; }
+.btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+.btn-primary { padding:10px 24px; background:linear-gradient(135deg,var(--accent),#5b3fd4); border-radius:10px; color:#fff; text-decoration:none; font-size:14px; font-weight:600; transition:.2s; box-shadow:0 0 20px var(--glow); }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 30px var(--glow); }
+
+/* HERO */
+.hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:120px 40px 80px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:20%; left:50%; transform:translate(-50%,-50%); width:800px; height:800px; background:radial-gradient(circle,rgba(124,92,252,.15) 0%,transparent 70%); pointer-events:none; }
+.hero::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:600px; height:300px; background:radial-gradient(ellipse,rgba(94,234,212,.08) 0%,transparent 70%); pointer-events:none; }
+.hero-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; background:rgba(124,92,252,.15); border:1px solid rgba(124,92,252,.3); border-radius:100px; font-size:13px; color:var(--accent2); font-weight:500; margin-bottom:32px; }
+.hero-badge::before { content:'✦'; color:var(--accent); }
+.hero h1 { font-family:'Syne',sans-serif; font-size:clamp(40px,7vw,80px); font-weight:800; line-height:1.1; margin-bottom:24px; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero p { font-size:clamp(16px,2vw,20px); color:var(--muted); max-width:600px; line-height:1.7; margin-bottom:48px; }
+.hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.btn-hero { padding:16px 36px; border-radius:14px; font-size:16px; font-weight:600; text-decoration:none; transition:.3s; cursor:pointer; border:none; font-family:'Inter',sans-serif; }
+.btn-hero-primary { background:linear-gradient(135deg,var(--accent),#5b3fd4); color:#fff; box-shadow:0 0 40px var(--glow); }
+.btn-hero-primary:hover { transform:translateY(-2px); box-shadow:0 8px 50px var(--glow); }
+.btn-hero-secondary { background:var(--surface); border:1px solid var(--border); color:var(--text); }
+.btn-hero-secondary:hover { border-color:var(--accent); background:var(--surface2); }
+
+/* FLOATING CARDS */
+.hero-preview { margin-top:64px; position:relative; width:100%; max-width:900px; }
+.preview-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 60px rgba(124,92,252,.1); }
+.preview-topbar { background:var(--surface2); padding:14px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); }
+.preview-dot { width:12px; height:12px; border-radius:50%; }
+.preview-title { margin-left:8px; font-size:13px; color:var(--muted); font-family:'Syne',sans-serif; }
+.preview-body { padding:24px; display:grid; grid-template-columns:220px 1fr; gap:20px; }
+.preview-sidebar { background:var(--bg2); border-radius:12px; padding:16px; }
+.preview-nav-item { padding:10px 14px; border-radius:8px; font-size:13px; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:8px; transition:.2s; margin-bottom:4px; }
+.preview-nav-item.active { background:rgba(124,92,252,.15); color:var(--accent); }
+.preview-nav-item::before { font-size:16px; }
+.preview-main { display:flex; flex-direction:column; gap:16px; }
+.stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.stat-mini { background:var(--bg2); border-radius:10px; padding:14px; }
+.stat-mini-label { font-size:11px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+.stat-mini-val { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--text); }
+.ticket-list { background:var(--bg2); border-radius:10px; padding:14px; }
+.ticket-list-header { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
+.ticket-row { display:flex; align-items:center; gap:12px; padding:10px; border-radius:8px; background:var(--surface); margin-bottom:6px; font-size:13px; }
+.ticket-badge { padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; }
+.badge-open { background:rgba(87,242,135,.15); color:#57F287; }
+.badge-closed { background:rgba(237,66,69,.15); color:#ED4245; }
+
+/* STATS SECTION */
+.stats-bar { background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:40px; display:grid; grid-template-columns:repeat(4,1fr); text-align:center; }
+.stat-item { padding:20px; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-num { font-family:'Syne',sans-serif; font-size:40px; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.stat-label { color:var(--muted); font-size:14px; margin-top:4px; }
+
+/* FEATURES */
+.features { padding:100px 40px; max-width:1200px; margin:0 auto; }
+.section-label { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--accent); font-weight:600; margin-bottom:16px; }
+.section-title { font-family:'Syne',sans-serif; font-size:clamp(28px,4vw,48px); font-weight:800; margin-bottom:16px; }
+.section-sub { color:var(--muted); font-size:18px; max-width:500px; line-height:1.6; margin-bottom:64px; }
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+.feature-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; transition:.3s; position:relative; overflow:hidden; }
+.feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:.3s; }
+.feature-card:hover { border-color:rgba(124,92,252,.3); transform:translateY(-4px); }
+.feature-card:hover::before { opacity:1; }
+.feature-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+.fi-purple { background:rgba(124,92,252,.15); }
+.fi-teal { background:rgba(94,234,212,.15); }
+.fi-pink { background:rgba(244,114,182,.15); }
+.fi-yellow { background:rgba(251,191,36,.15); }
+.fi-green { background:rgba(87,242,135,.15); }
+.fi-red { background:rgba(237,66,69,.15); }
+.feature-card h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:10px; }
+.feature-card p { color:var(--muted); font-size:14px; line-height:1.6; }
+.feature-tag { display:inline-block; padding:3px 10px; background:rgba(87,242,135,.15); color:#57F287; border-radius:20px; font-size:11px; font-weight:600; margin-top:14px; }
+
+/* FREE SECTION */
+.free-section { background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:80px 40px; text-align:center; }
+.free-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; max-width:800px; margin:48px auto; }
+.free-item { display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:16px; font-size:14px; }
+.free-item::before { content:'✓'; color:#57F287; font-weight:700; font-size:16px; flex-shrink:0; }
+
+/* CTA */
+.cta { padding:120px 40px; text-align:center; position:relative; overflow:hidden; }
+.cta::before { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:600px; height:400px; background:radial-gradient(ellipse,rgba(124,92,252,.2),transparent 70%); pointer-events:none; }
+.cta h2 { font-family:'Syne',sans-serif; font-size:clamp(32px,5vw,56px); font-weight:800; margin-bottom:20px; }
+.cta p { color:var(--muted); font-size:18px; margin-bottom:48px; }
+
+/* FOOTER */
+footer { background:var(--surface); border-top:1px solid var(--border); padding:40px; text-align:center; color:var(--muted); font-size:14px; }
+
+/* ANIMATIONS */
+@keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+.floating { animation:float 6s ease-in-out infinite; }
+@keyframes pulse-glow { 0%,100% { box-shadow:0 0 20px var(--glow); } 50% { box-shadow:0 0 50px var(--glow),0 0 80px rgba(124,92,252,.15); } }
+.pulse { animation:pulse-glow 3s ease-in-out infinite; }
+
+@media (max-width:768px) {
+  nav { padding:16px 20px; }
+  .nav-links { display:none; }
+  .hero { padding:100px 20px 60px; }
+  .preview-body { grid-template-columns:1fr; }
+  .preview-sidebar { display:none; }
+  .stat-row { grid-template-columns:1fr 1fr; }
+  .stats-bar { grid-template-columns:1fr 1fr; }
+  .stat-item { border-right:none; border-bottom:1px solid var(--border); }
+  .features { padding:60px 20px; }
+  .cta { padding:80px 20px; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">🎫 <span>UltraTicket</span></div>
+  <div class="nav-links">
+    <a href="#features">Funciones</a>
+    <a href="#gratis">Gratis</a>
+    <a href="#docs">Docs</a>
+  </div>
+  <div class="nav-cta">
+    <a href="/login" class="btn-ghost">Iniciar sesión</a>
+    <a href="/auth/discord" class="btn-primary pulse">Agregar al servidor</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">El bot de tickets más completo — 100% gratuito</div>
+  <h1>Sistema de tickets<br><span>profesional sin costo</span></h1>
+  <p>Transcripciones, paneles personalizados, estadísticas, dashboard web y todas las funciones premium. Gratis para siempre.</p>
+  <div class="hero-actions">
+    <a href="/auth/discord" class="btn-hero btn-hero-primary">🚀 Comenzar gratis</a>
+    <a href="/dashboard" class="btn-hero btn-hero-secondary">⚡ Ver dashboard</a>
+  </div>
+
+  <div class="hero-preview floating">
+    <div class="preview-card">
+      <div class="preview-topbar">
+        <div class="preview-dot" style="background:#ED4245"></div>
+        <div class="preview-dot" style="background:#FEE75C"></div>
+        <div class="preview-dot" style="background:#57F287"></div>
+        <span class="preview-title">UltraTicket Dashboard — Mi Servidor</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-sidebar">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Menú</div>
+          <div class="preview-nav-item active" style="--icon:'📊'">📊 Panel general</div>
+          <div class="preview-nav-item">🎫 Tickets</div>
+          <div class="preview-nav-item">📁 Categorías</div>
+          <div class="preview-nav-item">⚙️ Configuración</div>
+          <div class="preview-nav-item">🚫 Lista negra</div>
+          <div class="preview-nav-item">📄 Transcripciones</div>
+        </div>
+        <div class="preview-main">
+          <div class="stat-row">
+            <div class="stat-mini"><div class="stat-mini-label">Total</div><div class="stat-mini-val" style="color:var(--accent)">1,247</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Abiertos</div><div class="stat-mini-val" style="color:#57F287">23</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Hoy</div><div class="stat-mini-val" style="color:var(--accent2)">14</div></div>
+            <div class="stat-mini"><div class="stat-mini-label">Rating</div><div class="stat-mini-val" style="color:#FEE75C">4.8⭐</div></div>
+          </div>
+          <div class="ticket-list">
+            <div class="ticket-list-header">Tickets recientes</div>
+            <div class="ticket-row"><span style="color:var(--muted)">#1247</span><span style="flex:1">Problema con pago</span><span class="ticket-badge badge-open">ABIERTO</span></div>
+            <div class="ticket-row"><span style="color:var(--muted)">#1246</span><span style="flex:1">Reporte de usuario</span><span class="ticket-badge badge-open">ABIERTO</span></div>
+            <div class="ticket-row"><span style="color:var(--muted)">#1245</span><span style="flex:1">Pregunta general</span><span class="ticket-badge badge-closed">CERRADO</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Gratuito para siempre</div></div>
+  <div class="stat-item"><div class="stat-num">15+</div><div class="stat-label">Funciones premium</div></div>
+  <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Tickets ilimitados</div></div>
+  <div class="stat-item"><div class="stat-num">24/7</div><div class="stat-label">Uptime garantizado</div></div>
+</div>
+
+<section class="features" id="features">
+  <div class="section-label">Funciones</div>
+  <div class="section-title">Todo lo que necesitas,<br>sin pagar nada</div>
+  <div class="section-sub">Funciones que otros cobran $15/mes al mes, completamente gratis en UltraTicket.</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">📄</div>
+      <h3>Transcripciones HTML</h3>
+      <p>Genera transcripciones completas en formato HTML con avatares, adjuntos, embeds y diseño idéntico al de Discord. Se envían por DM y al canal de transcripciones.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-teal">🌐</div>
+      <h3>Dashboard Web</h3>
+      <p>Panel de control completo accesible desde el navegador. Configura categorías, roles, mensajes y todo sin escribir un solo comando.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">📁</div>
+      <h3>Categorías ilimitadas</h3>
+      <p>Crea tantas categorías como necesites: soporte, ventas, reportes, apelaciones. Cada una con su propio canal, roles de staff y mensajes personalizados.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-yellow">⭐</div>
+      <h3>Sistema de calificaciones</h3>
+      <p>Al cerrar un ticket, el usuario recibe un DM para calificar la atención del 1 al 5 estrellas. Ve las estadísticas de cada miembro del staff.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">⚡</div>
+      <h3>Sistema de prioridades</h3>
+      <p>Clasifica tickets como Baja, Media, Alta o Crítica. Perfecto para tener claras las prioridades del equipo de soporte.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">🚫</div>
+      <h3>Lista negra</h3>
+      <p>Bloquea usuarios específicos para que no puedan abrir tickets. Incluye razón, fecha de expiración opcional y gestión desde el dashboard.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">🙋</div>
+      <h3>Reclamar tickets</h3>
+      <p>El staff puede reclamar tickets para asignarse la responsabilidad. Un ticket reclamado solo será respondido por ese agente.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-teal">⏰</div>
+      <h3>Auto-cierre por inactividad</h3>
+      <p>Cierra automáticamente tickets inactivos tras un tiempo configurable. Envía advertencia previa al usuario antes de cerrar.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">📊</div>
+      <h3>Estadísticas avanzadas</h3>
+      <p>Dashboard con métricas detalladas: tickets por día, calificación promedio, tiempo de respuesta, top staff y más.</p>
+      <span class="feature-tag">✓ GRATIS</span>
+    </div>
+  </div>
+</section>
+
+<section class="free-section" id="gratis">
+  <div class="section-label" style="justify-content:center;display:flex">100% Gratis</div>
+  <h2 style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;margin-bottom:16px">Todo incluido, sin límites</h2>
+  <p style="color:var(--muted);font-size:18px;max-width:500px;margin:0 auto">Sin planes de pago, sin funciones bloqueadas, sin watermarks. Auto-hospedado, tú controlas todo.</p>
+  <div class="free-grid">
+    <div class="free-item">Tickets ilimitados</div>
+    <div class="free-item">Categorías ilimitadas</div>
+    <div class="free-item">Transcripciones HTML</div>
+    <div class="free-item">Dashboard web completo</div>
+    <div class="free-item">Sistema de ratings</div>
+    <div class="free-item">Lista negra</div>
+    <div class="free-item">Auto-cierre</div>
+    <div class="free-item">Logs detallados</div>
+    <div class="free-item">Estadísticas</div>
+    <div class="free-item">Prioridades</div>
+    <div class="free-item">Soporte multi-servidor</div>
+    <div class="free-item">Código abierto</div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>¿Listo para mejorar<br><span style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">tu soporte?</span></h2>
+  <p>Configúralo en menos de 5 minutos. Sin tarjeta de crédito.</p>
+  <a href="/auth/discord" class="btn-hero btn-hero-primary" style="display:inline-block">🚀 Comenzar ahora — Es gratis</a>
+</section>
+
+<footer>
+  <div style="margin-bottom:8px">🎫 <strong>UltraTicket Bot</strong> — Sistema de tickets premium, completamente gratuito</div>
+  <div>Hecho con ❤️ para la comunidad de Discord</div>
+</footer>
+</body>
+</html>

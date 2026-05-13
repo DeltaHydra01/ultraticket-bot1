@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración — UltraTicket</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --bg2:#0d0d16; --surface:#13131f; --surface2:#1a1a2e;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+  --text:#e8e8f0; --muted:#6b7280; --muted2:#9ca3af;
+  --accent:#7c5cfc; --accent2:#5eead4; --accent3:#f472b6;
+  --success:#57F287; --danger:#ED4245; --warning:#FEE75C;
+  --glow:rgba(124,92,252,.2);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+/* ── TOPBAR ── */
+.topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.topbar-left { display:flex; align-items:center; gap:16px; }
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; text-decoration:none; color:var(--text); }
+.logo em { background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-style:normal; }
+.breadcrumb { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+.breadcrumb a { color:var(--muted); text-decoration:none; } .breadcrumb a:hover { color:var(--text); }
+.breadcrumb-sep { color:var(--border2); }
+.guild-pill { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 12px 4px 4px; }
+.guild-pill img,.guild-pill .guild-initials { width:26px; height:26px; border-radius:50%; object-fit:cover; }
+.guild-pill .guild-initials { background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; border-radius:50%; }
+.guild-pill span { font-size:13px; font-weight:600; }
+.user-info { display:flex; align-items:center; gap:8px; }
+.user-avatar { width:30px; height:30px; border-radius:50%; border:2px solid var(--border2); }
+.btn-sm { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:500; text-decoration:none; transition:.15s; cursor:pointer; border:none; font-family:'Inter',sans-serif; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn-ghost:hover { border-color:var(--accent); color:var(--text); }
+
+/* ── LAYOUT ── */
+.layout { display:flex; flex:1; }
+.sidebar { width:220px; background:var(--surface); border-right:1px solid var(--border); padding:20px 12px; position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto; flex-shrink:0; }
+.sidebar-section { margin-bottom:24px; }
+.sidebar-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-weight:600; padding:0 8px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; color:var(--muted2); font-size:14px; font-weight:500; cursor:pointer; transition:.15s; user-select:none; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:rgba(124,92,252,.15); color:var(--accent); }
+.nav-item .nav-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+.nav-badge { margin-left:auto; background:var(--danger); color:#fff; border-radius:20px; padding:1px 7px; font-size:10px; font-weight:700; }
+
+/* ── MAIN ── */
+.main { flex:1; padding:32px 36px; overflow-y:auto; max-width:900px; }
+.page-header { margin-bottom:32px; }
+.page-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:4px; }
+.page-sub { color:var(--muted); font-size:14px; }
+
+/* ── CARDS & SECTIONS ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:20px; overflow:hidden; }
+.card-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.card-body { padding:24px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column:1/-1; }
+label { font-size:12px; font-weight:600; color:var(--muted2); text-transform:uppercase; letter-spacing:.5px; }
+input[type=text],input[type=number],select,textarea {
+  width:100%; padding:10px 14px; background:var(--bg2); border:1px solid var(--border); border-radius:10px;
+  color:var(--text); font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:.15s;
+}
+input:focus,select:focus,textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,92,252,.1); }
+textarea { min-height:90px; resize:vertical; line-height:1.5; }
+select option { background:var(--surface2); }
+.hint { font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* ── TOGGLE SWITCH ── */
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; padding-bottom:0; }
+.toggle-info { flex:1; }
+.toggle-label { font-size:14px; font-weight:500; margin-bottom:2px; }
+.toggle-desc { font-size:12px; color:var(--muted); }
+.toggle { position:relative; width:42px; height:24px; flex-shrink:0; margin-left:16px; }
+.toggle input { opacity:0; width:0; height:0; position:absolute; }
+.toggle-slider { position:absolute; inset:0; background:var(--surface2); border:1px solid var(--border2); border-radius:24px; cursor:pointer; transition:.2s; }
+.toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:var(--muted); border-radius:50%; transition:.2s; }
+.toggle input:checked + .toggle-slider { background:var(--accent); border-color:var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(18px); background:#fff; }
+
+/* ── BUTTONS ── */
+.btn { padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:'Inter',sans-serif; transition:.2s; display:inline-flex; align-items:center; gap:8px; }
+.btn-primary { background:linear-gradient(135deg,var(--accent),#5b3fd4); color:#fff; box-shadow:0 0 20px var(--glow); }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 25px var(--glow); }
+.btn-success { background:rgba(87,242,135,.15); border:1px solid rgba(87,242,135,.3); color:var(--success); }
+.btn-success:hover { background:rgba(87,242,135,.25); }
+.btn-danger { background:rgba(237,66,69,.15); border:1px solid rgba(237,66,69,.3); color:var(--danger); }
+.btn-danger:hover { background:rgba(237,66,69,.25); }
+.btn-outline { background:transparent; border:1px solid var(--border2); color:var(--text); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── CATEGORY CARDS ── */
+.cat-list { display:flex; flex-direction:column; gap:10px; }
+.cat-item { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:14px; transition:.15s; }
+.cat-item:hover { border-color:var(--border2); }
+.cat-emoji { font-size:24px; flex-shrink:0; }
+.cat-info { flex:1; min-width:0; }
+.cat-name { font-weight:600; font-size:15px; margin-bottom:2px; }
+.cat-desc { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cat-actions { display:flex; gap:8px; flex-shrink:0; }
+
+/* ── BLACKLIST TABLE ── */
+.bl-table { width:100%; border-collapse:collapse; }
+.bl-table th { text-align:left; padding:10px 14px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); border-bottom:1px solid var(--border); font-weight:600; }
+.bl-table td { padding:12px 14px; font-size:13px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.bl-table tr:last-child td { border-bottom:none; }
+.bl-table tr:hover td { background:rgba(255,255,255,.02); }
+
+/* ── STATS ── */
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
+.stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.stat-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:10px; font-weight:600; }
+.stat-value { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; line-height:1; }
+.stat-sub { font-size:12px; color:var(--muted); margin-top:6px; }
+.staff-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.staff-row:last-child { border-bottom:none; }
+.staff-rank { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.rank-1 { background:rgba(251,191,36,.2); color:#FBBF24; }
+.rank-2 { background:rgba(156,163,175,.2); color:#9CA3AF; }
+.rank-3 { background:rgba(180,83,9,.2); color:#B45309; }
+.rank-other { background:var(--surface2); color:var(--muted); }
+.staff-name { flex:1; font-size:14px; font-weight:500; }
+.staff-count { font-size:13px; color:var(--muted); }
+.staff-rating { color:var(--warning); font-size:12px; }
+.bar-wrap { height:6px; background:var(--surface2); border-radius:3px; margin-top:4px; }
+.bar-fill { height:6px; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:20px; padding:28px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.modal-close { width:30px; height:30px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:.15s; }
+.modal-close:hover { color:var(--text); border-color:var(--border2); }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+
+/* ── TOAST ── */
+.toast-container { position:fixed; bottom:24px; right:24px; z-index:300; display:flex; flex-direction:column; gap:8px; }
+.toast { background:var(--surface); border:1px solid var(--border2); border-radius:12px; padding:14px 18px; font-size:14px; display:flex; align-items:center; gap:10px; box-shadow:0 8px 30px rgba(0,0,0,.4); animation:slideIn .3s ease; min-width:220px; }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+.toast.success { border-color:rgba(87,242,135,.3); }
+.toast.error { border-color:rgba(237,66,69,.3); }
+
+/* ── UTILITIES ── */
+.hidden { display:none !important; }
+.tag { display:inline-block; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; }
+.tag-open { background:rgba(87,242,135,.15); color:var(--success); }
+.tag-closed { background:rgba(237,66,69,.15); color:var(--danger); }
+.color-preview { width:24px; height:24px; border-radius:6px; border:2px solid var(--border2); flex-shrink:0; }
+.color-row { display:flex; align-items:center; gap:8px; }
+.color-row input[type=text] { flex:1; }
+.spinner { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+@media (max-width:768px) {
+  .sidebar { display:none; }
+  .main { padding:20px; }
+  .form-grid, .form-grid-3 { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="/dashboard" class="logo">🎫 <em>UltraTicket</em></a>
+    <div class="breadcrumb">
+      <span class="breadcrumb-sep">/</span>
+      <div class="guild-pill">
+        <div id="guildIconWrap"></div>
+        <span id="guildNameTop">Cargando...</span>
+      </div>
+    </div>
+  </div>
+  <div class="user-info">
+    <img id="userAvatar" src="" alt="" class="user-avatar">
+    <a href="/auth/logout" class="btn-sm btn-ghost">Salir</a>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">General</div>
+      <div class="nav-item active" data-tab="overview"><span class="nav-icon">📊</span> Panel general</div>
+      <div class="nav-item" data-tab="config"><span class="nav-icon">⚙️</span> Configuración</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tickets</div>
+      <div class="nav-item" data-tab="categories"><span class="nav-icon">📁</span> Categorías</div>
+      <div class="nav-item" id="navTickets" data-href="tickets"><span class="nav-icon">🎫</span> Ver tickets</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Gestión</div>
+      <div class="nav-item" data-tab="blacklist"><span class="nav-icon">🚫</span> Lista negra</div>
+      <div class="nav-item" data-tab="stats"><span class="nav-icon">📈</span> Estadísticas</div>
+    </div>
+    <div class="sidebar-section" style="margin-top:auto">
+      <a href="/dashboard" class="nav-item" style="text-decoration:none"><span class="nav-icon">←</span> Volver</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ── OVERVIEW TAB ── -->
+    <div id="tab-overview">
+      <div class="page-header">
+        <div class="page-title">📊 Panel General</div>
+        <div class="page-sub">Resumen del sistema de tickets de tu servidor</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">🎫 Total de tickets</div>
+          <div class="stat-value" id="statTotal" style="color:var(--accent)">—</div>
+          <div class="stat-sub">Todos los tiempos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">🟢 Tickets abiertos</div>
+          <div class="stat-value" id="statOpen" style="color:var(--success)">—</div>
+          <div class="stat-sub">En este momento</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📅 Creados hoy</div>
+          <div class="stat-value" id="statToday" style="color:var(--accent2)">—</div>
+          <div class="stat-sub">Últimas 24 horas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">⭐ Calificación promedio</div>
+          <div class="stat-value" id="statRating" style="color:var(--warning)">—</div>
+          <div class="stat-sub">De atención al usuario</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏆 Top Staff</div>
+        </div>
+        <div class="card-body">
+          <div id="staffList"><div style="color:var(--muted);font-size:14px">Cargando estadísticas...</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📁 Tickets por categoría</div>
+        </div>
+        <div class="card-body">
+          <div id="categoryChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONFIG TAB ── -->
+    <div id="tab-config" class="hidden">
+      <div class="page-header">
+        <div class="page-title">⚙️ Configuración</div>
+        <div class="page-sub">Ajusta el comportamiento general del bot</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 Canales</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Canal de logs</label>
+              <input type="text" id="cfgLogChannel" placeholder="ID del canal (ej: 123456789)">
+              <span class="hint">Aquí se registran todos los eventos de tickets</span>
+            </div>
+            <div class="form-group">
+              <label>Canal de transcripciones</label>
+              <input type="text" id="cfgTranscriptChannel" placeholder="ID del canal">
+              <span class="hint">Las transcripciones se envían aquí al cerrar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎫 Límites</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Máximo de tickets por usuario</label>
+              <input type="number" id="cfgMaxTickets" min="1" max="20" value="3">
+              <span class="hint">Cuántos tickets puede tener abiertos un usuario</span>
+            </div>
+            <div class="form-group">
+              <label>Auto-cierre por inactividad (horas)</label>
+              <input type="number" id="cfgAutoClose" min="0" max="720" value="0">
+              <span class="hint">0 = desactivado. Cierra tickets inactivos automáticamente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔔 Notificaciones y comportamiento</div></div>
+        <div class="card-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">DM al abrir ticket</div>
+              <div class="toggle-desc">Envía un mensaje privado al usuario cuando su ticket es creado</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="cfgDmOpen"><div class="toggle-slider"></div></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">DM al cerrar ticket</div>
+              <div class="toggle-desc">Envía transcripción y formulario de calificación por DM al cerrar</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="cfgDmClose"><div class="toggle-slider"></div></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Mencionar roles de staff</div>
+              <div class="toggle-desc">Menciona a los roles de soporte al abrir un nuevo ticket</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="cfgPingStaff"><div class="toggle-slider"></div></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Requerir asunto al abrir</div>
+              <div class="toggle-desc">Muestra un formulario para que el usuario escriba el motivo del ticket</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="cfgRequireTopic"><div class="toggle-slider"></div></label>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar cambios</button>
+    </div>
+
+    <!-- ── CATEGORIES TAB ── -->
+    <div id="tab-categories" class="hidden">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div class="page-title">📁 Categorías</div>
+          <div class="page-sub">Gestiona las categorías de tickets de tu servidor</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCatModal()">+ Nueva categoría</button>
+      </div>
+      <div id="catList" class="cat-list">
+        <div style="color:var(--muted);font-size:14px;padding:20px 0">Cargando categorías...</div>
+      </div>
+      <div class="card" style="margin-top:20px;border-color:rgba(94,234,212,.2)">
+        <div class="card-body" style="display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:20px">💡</span>
+          <div>
+            <div style="font-weight:600;margin-bottom:4px">Consejo</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6">
+              Después de crear las categorías, usa <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;font-size:12px">/panel</code>
+              en tu servidor para desplegar el panel de tickets en el canal que prefieras.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BLACKLIST TAB ── -->
+    <div id="tab-blacklist" class="hidden">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div class="page-title">🚫 Lista negra</div>
+          <div class="page-sub">Usuarios bloqueados para abrir tickets</div>
+        </div>
+        <button class="btn btn-danger" onclick="openBlacklistModal()">+ Añadir usuario</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="bl-table">
+            <thead>
+              <tr>
+                <th>Usuario ID</th>
+                <th>Razón</th>
+                <th>Añadido por</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="blTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATS TAB ── -->
+    <div id="tab-stats" class="hidden">
+      <div class="page-header">
+        <div class="page-title">📈 Estadísticas</div>
+        <div class="page-sub">Métricas detalladas de tu sistema de soporte</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">🔒 Total cerrados</div>
+          <div class="stat-value" id="statClosed" style="color:var(--danger)">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">📊 Tasa de resolución</div>
+          <div class="stat-value" id="statResolution" style="color:var(--accent2)">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏆 Ranking del staff</div></div>
+        <div class="card-body"><div id="statsStaffList">Cargando...</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── MODAL: CATEGORÍA ── -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="catModalTitle">📁 Nueva categoría</div>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre de la categoría *</label>
+          <input type="text" id="catName" placeholder="Soporte general">
+        </div>
+        <div class="form-group">
+          <label>Emoji</label>
+          <input type="text" id="catEmoji" placeholder="🎫" maxlength="4">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descripción (aparece en el panel)</label>
+        <input type="text" id="catDesc" placeholder="Abre un ticket para soporte general">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>ID de categoría de Discord</label>
+          <input type="text" id="catChannel" placeholder="ID del category channel">
+          <span class="hint">Los tickets se crean dentro de esta categoría</span>
+        </div>
+        <div class="form-group">
+          <label>Color del embed</label>
+          <div class="color-row">
+            <input type="color" id="catColorPicker" value="#7c5cfc" style="width:42px;height:38px;border-radius:8px;border:1px solid var(--border2);cursor:pointer;background:none;padding:2px">
+            <input type="text" id="catColor" placeholder="#7c5cfc" value="#7c5cfc">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Roles de soporte (IDs separados por coma)</label>
+        <input type="text" id="catRoles" placeholder="123456789, 987654321">
+        <span class="hint">Estos roles pueden ver y responder tickets de esta categoría</span>
+      </div>
+      <div class="form-group">
+        <label>Esquema de nombre del canal</label>
+        <input type="text" id="catNaming" placeholder="ticket-{id}" value="ticket-{id}">
+        <span class="hint">Variables: <code>{id}</code> número, <code>{username}</code> usuario, <code>{category}</code> categoría</span>
+      </div>
+      <div class="form-group">
+        <label>Mensaje de bienvenida</label>
+        <textarea id="catWelcome" placeholder="Gracias por abrir un ticket. Un miembro del staff te atenderá pronto."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Mensaje de cierre (enviado por DM)</label>
+        <textarea id="catClose" placeholder="Tu ticket ha sido cerrado. ¡Que tengas un buen día!"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeCatModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCategory()">💾 Guardar categoría</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: BLACKLIST ── -->
+<div class="modal-overlay" id="blModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚫 Añadir a lista negra</div>
+      <button class="modal-close" onclick="document.getElementById('blModal').classList.remove('open')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>ID del usuario *</label>
+        <input type="text" id="blUserId" placeholder="123456789012345678">
+        <span class="hint">Copia el ID de Discord del usuario (modo desarrollador activado)</span>
+      </div>
+      <div class="form-group">
+        <label>Razón</label>
+        <textarea id="blReason" placeholder="Motivo del bloqueo..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('blModal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-danger" onclick="addBlacklist()">🚫 Bloquear usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const guildId = location.pathname.split('/')[2];
+let currentConfig = {};
+let categories = [];
+let editingCatId = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const user = await fetch('/api/user').then(r => r.json());
+  document.getElementById('userAvatar').src = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`
+    : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+  const guilds = await fetch('/api/guilds').then(r => r.json());
+  const guild = guilds.find(g => g.id === guildId);
+  if (guild) {
+    document.title = `${guild.name} — UltraTicket`;
+    document.getElementById('guildNameTop').textContent = guild.name;
+    const wrap = document.getElementById('guildIconWrap');
+    if (guild.iconURL) {
+      wrap.innerHTML = `<img src="${guild.iconURL}" alt="" class="guild-initials" style="border-radius:50%">`;
+    } else {
+      wrap.innerHTML = `<div class="guild-initials">${guild.name.charAt(0)}</div>`;
+    }
+  }
+
+  // nav
+  document.querySelectorAll('.nav-item[data-tab]').forEach(el => {
+    el.addEventListener('click', () => switchTab(el.dataset.tab));
+  });
+  document.getElementById('navTickets').addEventListener('click', () => {
+    location.href = `/dashboard/${guildId}/tickets`;
+  });
+
+  loadOverview();
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById(`tab-${tab}`)?.classList.remove('hidden');
+  if (tab === 'overview') loadOverview();
+  if (tab === 'config') loadConfig();
+  if (tab === 'categories') loadCategories();
+  if (tab === 'blacklist') loadBlacklist();
+  if (tab === 'stats') loadStats();
+}
+
+// ── OVERVIEW ─────────────────────────────────────────────────────────────────
+async function loadOverview() {
+  const data = await fetch(`/api/guilds/${guildId}/stats`).then(r => r.json());
+  const { stats, topStaff } = data;
+  document.getElementById('statTotal').textContent = stats.total || 0;
+  document.getElementById('statOpen').textContent = stats.open || 0;
+  document.getElementById('statToday').textContent = stats.today || 0;
+  document.getElementById('statRating').textContent = stats.avgRating ? `${parseFloat(stats.avgRating).toFixed(1)}⭐` : 'N/A';
+
+  const staffEl = document.getElementById('staffList');
+  if (!topStaff.length) { staffEl.innerHTML = '<div style="color:var(--muted);font-size:14px">No hay datos de staff aún</div>'; }
+  else {
+    const maxTickets = topStaff[0]?.tickets_handled || 1;
+    staffEl.innerHTML = topStaff.map((s, i) => `
+      <div class="staff-row">
+        <div class="staff-rank ${['rank-1','rank-2','rank-3','rank-other','rank-other'][i]}">${i + 1}</div>
+        <div style="flex:1">
+          <div class="staff-name">👤 <code style="font-size:12px;color:var(--muted)">${s.user_id}</code></div>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${(s.tickets_handled/maxTickets*100).toFixed(0)}%"></div></div>
+        </div>
+        <div style="text-align:right">
+          <div class="staff-count">${s.tickets_handled} tickets</div>
+          ${s.avg_rating ? `<div class="staff-rating">${s.avg_rating.toFixed(1)}⭐</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const catEl = document.getElementById('categoryChart');
+  if (!stats.byCategory?.length) { catEl.innerHTML = '<div style="color:var(--muted);font-size:14px">Sin datos por categoría</div>'; }
+  else {
+    const max = stats.byCategory[0]?.count || 1;
+    catEl.innerHTML = stats.byCategory.map(c => `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:120px;font-size:13px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name || 'Sin categoría'}</div>
+        <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px">
+          <div style="height:8px;width:${(c.count/max*100).toFixed(0)}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px"></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;width:32px;text-align:right">${c.count}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+async function loadConfig() {
+  const cfg = await fetch(`/api/guilds/${guildId}/config`).then(r => r.json());
+  currentConfig = cfg;
+  document.getElementById('cfgLogChannel').value = cfg.log_channel || '';
+  document.getElementById('cfgTranscriptChannel').value = cfg.transcript_channel || '';
+  document.getElementById('cfgMaxTickets').value = cfg.max_tickets_per_user || 3;
+  document.getElementById('cfgAutoClose').value = cfg.auto_close_hours || 0;
+  document.getElementById('cfgDmOpen').checked = !!cfg.dm_on_open;
+  document.getElementById('cfgDmClose').checked = !!cfg.dm_on_close;
+  document.getElementById('cfgPingStaff').checked = !!cfg.ping_staff;
+  document.getElementById('cfgRequireTopic').checked = !!cfg.require_topic;
+}
+
+async function saveConfig() {
+  const data = {
+    log_channel: document.getElementById('cfgLogChannel').value.trim() || null,
+    transcript_channel: document.getElementById('cfgTranscriptChannel').value.trim() || null,
+    max_tickets_per_user: parseInt(document.getElementById('cfgMaxTickets').value) || 3,
+    auto_close_hours: parseInt(document.getElementById('cfgAutoClose').value) || 0,
+    dm_on_open: document.getElementById('cfgDmOpen').checked ? 1 : 0,
+    dm_on_close: document.getElementById('cfgDmClose').checked ? 1 : 0,
+    ping_staff: document.getElementById('cfgPingStaff').checked ? 1 : 0,
+    require_topic: document.getElementById('cfgRequireTopic').checked ? 1 : 0
+  };
+  const res = await fetch(`/api/guilds/${guildId}/config`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+  });
+  if (res.ok) toast('✅ Configuración guardada', 'success');
+  else toast('❌ Error al guardar', 'error');
+}
+
+// ── CATEGORIES ────────────────────────────────────────────────────────────────
+async function loadCategories() {
+  categories = await fetch(`/api/guilds/${guildId}/categories`).then(r => r.json());
+  const el = document.getElementById('catList');
+  if (!categories.length) {
+    el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:12px">📁</div>
+      <div style="font-size:15px;margin-bottom:8px">No hay categorías</div>
+      <div style="font-size:13px">Crea tu primera categoría para comenzar</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = categories.map(c => `
+    <div class="cat-item">
+      <div class="cat-emoji">${c.emoji}</div>
+      <div class="cat-info">
+        <div class="cat-name">${c.name}</div>
+        <div class="cat-desc">${c.description || 'Sin descripción'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tag ${c.enabled ? 'tag-open' : 'tag-closed'}">${c.enabled ? 'Activa' : 'Inactiva'}</span>
+      </div>
+      <div class="cat-actions">
+        <button class="btn btn-outline btn-sm" onclick="editCategory(${c.id})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id},'${c.name}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openCatModal(id = null) {
+  editingCatId = id;
+  document.getElementById('catModalTitle').textContent = id ? '✏️ Editar categoría' : '📁 Nueva categoría';
+  if (!id) {
+    ['catName','catEmoji','catDesc','catChannel','catRoles','catNaming','catWelcome','catClose'].forEach(i => {
+      const el = document.getElementById(i);
+      if (el) el.value = i === 'catEmoji' ? '🎫' : i === 'catNaming' ? 'ticket-{id}' : '';
+    });
+    document.getElementById('catColor').value = '#7c5cfc';
+    document.getElementById('catColorPicker').value = '#7c5cfc';
+  }
+  document.getElementById('catModal').classList.add('open');
+}
+
+function closeCatModal() {
+  document.getElementById('catModal').classList.remove('open');
+  editingCatId = null;
+}
+
+function editCategory(id) {
+  const cat = categories.find(c => c.id === id);
+  if (!cat) return;
+  editingCatId = id;
+  document.getElementById('catName').value = cat.name;
+  document.getElementById('catEmoji').value = cat.emoji;
+  document.getElementById('catDesc').value = cat.description || '';
+  document.getElementById('catChannel').value = cat.category_channel || '';
+  document.getElementById('catColor').value = cat.color || '#7c5cfc';
+  document.getElementById('catColorPicker').value = cat.color || '#7c5cfc';
+  document.getElementById('catRoles').value = (cat.support_roles || []).join(', ');
+  document.getElementById('catNaming').value = cat.naming_scheme || 'ticket-{id}';
+  document.getElementById('catWelcome').value = cat.welcome_message || '';
+  document.getElementById('catClose').value = cat.close_message || '';
+  openCatModal(id);
+}
+
+async function saveCategory() {
+  const roles = document.getElementById('catRoles').value.split(',').map(r => r.trim()).filter(Boolean);
+  const data = {
+    name: document.getElementById('catName').value.trim(),
+    emoji: document.getElementById('catEmoji').value.trim() || '🎫',
+    description: document.getElementById('catDesc').value.trim(),
+    category_channel: document.getElementById('catChannel').value.trim() || null,
+    color: document.getElementById('catColor').value.trim(),
+    support_roles: roles,
+    naming_scheme: document.getElementById('catNaming').value.trim() || 'ticket-{id}',
+    welcome_message: document.getElementById('catWelcome').value.trim(),
+    close_message: document.getElementById('catClose').value.trim()
+  };
+  if (!data.name) return toast('❌ El nombre es obligatorio', 'error');
+
+  const url = editingCatId
+    ? `/api/guilds/${guildId}/categories/${editingCatId}`
+    : `/api/guilds/${guildId}/categories`;
+  const method = editingCatId ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (res.ok) {
+    toast(`✅ Categoría ${editingCatId ? 'actualizada' : 'creada'}`, 'success');
+    closeCatModal();
+    loadCategories();
+  } else toast('❌ Error al guardar', 'error');
+}
+
+async function deleteCategory(id, name) {
+  if (!confirm(`¿Eliminar la categoría "${name}"? Los tickets existentes no se borrarán.`)) return;
+  const res = await fetch(`/api/guilds/${guildId}/categories/${id}`, { method: 'DELETE' });
+  if (res.ok) { toast('✅ Categoría eliminada', 'success'); loadCategories(); }
+  else toast('❌ Error al eliminar', 'error');
+}
+
+// sync color picker
+document.getElementById('catColorPicker').addEventListener('input', e => { document.getElementById('catColor').value = e.target.value; });
+document.getElementById('catColor').addEventListener('input', e => {
+  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) document.getElementById('catColorPicker').value = e.target.value;
+});
+
+// ── BLACKLIST ─────────────────────────────────────────────────────────────────
+async function loadBlacklist() {
+  const list = await fetch(`/api/guilds/${guildId}/blacklist`).then(r => r.json());
+  const tbody = document.getElementById('blTableBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Lista negra vacía ✅</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(e => `
+    <tr>
+      <td><code style="font-size:12px">${e.user_id}</code></td>
+      <td style="color:var(--muted2)">${e.reason || '—'}</td>
+      <td><code style="font-size:12px">${e.added_by || '—'}</code></td>
+      <td style="color:var(--muted);font-size:12px">${new Date(e.created_at * 1000).toLocaleDateString('es-ES')}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeBlacklist('${e.user_id}')">Quitar</button></td>
+    </tr>
+  `).join('');
+}
+
+function openBlacklistModal() { document.getElementById('blModal').classList.add('open'); }
+
+async function addBlacklist() {
+  const user_id = document.getElementById('blUserId').value.trim();
+  const reason = document.getElementById('blReason').value.trim();
+  if (!user_id) return toast('❌ ID requerido', 'error');
+  const res = await fetch(`/api/guilds/${guildId}/blacklist`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id, reason })
+  });
+  if (res.ok) {
+    toast('🚫 Usuario bloqueado', 'success');
+    document.getElementById('blModal').classList.remove('open');
+    document.getElementById('blUserId').value = '';
+    document.getElementById('blReason').value = '';
+    loadBlacklist();
+  } else toast('❌ Error', 'error');
+}
+
+async function removeBlacklist(userId) {
+  if (!confirm('¿Remover a este usuario de la lista negra?')) return;
+  const res = await fetch(`/api/guilds/${guildId}/blacklist/${userId}`, { method: 'DELETE' });
+  if (res.ok) { toast('✅ Usuario desbloqueado', 'success'); loadBlacklist(); }
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const data = await fetch(`/api/guilds/${guildId}/stats`).then(r => r.json());
+  const { stats, topStaff } = data;
+  const total = stats.total || 1;
+  document.getElementById('statClosed').textContent = stats.closed || 0;
+  document.getElementById('statResolution').textContent = stats.total ? `${((stats.closed / stats.total) * 100).toFixed(0)}%` : '0%';
+
+  const el = document.getElementById('statsStaffList');
+  if (!topStaff.length) { el.innerHTML = '<div style="color:var(--muted)">Sin datos</div>'; return; }
+  el.innerHTML = topStaff.map((s, i) => `
+    <div class="staff-row">
+      <div class="staff-rank ${['rank-1','rank-2','rank-3','rank-other','rank-other'][i]}">${i + 1}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;margin-bottom:4px">ID: <code style="font-size:12px">${s.user_id}</code></div>
+        <div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">
+          <span>🎫 ${s.tickets_handled} tickets</span>
+          ${s.avg_rating ? `<span>⭐ ${s.avg_rating.toFixed(1)}/5.0 (${s.total_ratings} ratings)</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>

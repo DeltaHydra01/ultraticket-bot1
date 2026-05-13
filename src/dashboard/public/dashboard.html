@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — UltraTicket</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0a0a0f; --bg2:#0d0d16; --surface:#13131f; --surface2:#1a1a2e; --border:rgba(255,255,255,.07); --text:#e8e8f0; --muted:#6b7280; --accent:#7c5cfc; --accent2:#5eead4; --glow:rgba(124,92,252,.25); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
+.topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; }
+.logo span { background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.user-info { display:flex; align-items:center; gap:10px; }
+.user-avatar { width:32px; height:32px; border-radius:50%; border:2px solid var(--border); }
+.user-name { font-size:14px; font-weight:500; }
+.logout-btn { padding:6px 14px; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; text-decoration:none; transition:.2s; }
+.logout-btn:hover { color:var(--text); border-color:var(--accent); }
+.content { max-width:1100px; margin:0 auto; padding:48px 40px; }
+.page-title { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; margin-bottom:8px; }
+.page-sub { color:var(--muted); font-size:16px; margin-bottom:40px; }
+.search-box { width:100%; max-width:400px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:14px; font-family:'Inter',sans-serif; margin-bottom:32px; outline:none; transition:.2s; }
+.search-box:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,92,252,.1); }
+.search-box::placeholder { color:var(--muted); }
+.guilds-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+.guild-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; display:flex; flex-direction:column; align-items:center; gap:14px; cursor:pointer; transition:.3s; text-decoration:none; color:var(--text); position:relative; overflow:hidden; }
+.guild-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:.3s; }
+.guild-card:hover { border-color:rgba(124,92,252,.4); transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,.3); }
+.guild-card:hover::before { opacity:1; }
+.guild-icon { width:64px; height:64px; border-radius:16px; object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:28px; font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); }
+.guild-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; text-align:center; }
+.guild-id { font-size:11px; color:var(--muted); }
+.guild-arrow { opacity:0; transform:translateX(-4px); transition:.2s; color:var(--accent); font-size:16px; }
+.guild-card:hover .guild-arrow { opacity:1; transform:translateX(0); }
+.loading { text-align:center; padding:80px; color:var(--muted); }
+.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 16px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.empty { text-align:center; padding:80px; color:var(--muted); }
+.empty-icon { font-size:48px; margin-bottom:16px; }
+.empty p { font-size:16px; }
+.empty small { font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">🎫 <span>UltraTicket</span></div>
+  <div class="user-info">
+    <img id="userAvatar" src="" alt="" class="user-avatar">
+    <span id="userName" class="user-name">Cargando...</span>
+    <a href="/auth/logout" class="logout-btn">Salir</a>
+  </div>
+</div>
+<div class="content">
+  <div class="page-title">Mis Servidores</div>
+  <div class="page-sub">Selecciona un servidor para configurar UltraTicket</div>
+  <input type="text" class="search-box" placeholder="🔍 Buscar servidor..." id="searchInput" oninput="filterGuilds()">
+  <div id="guildsContainer" class="loading">
+    <div class="spinner"></div>
+    <div>Cargando servidores...</div>
+  </div>
+</div>
+<script>
+let allGuilds = [];
+
+async function loadData() {
+  try {
+    const [userRes, guildsRes] = await Promise.all([
+      fetch('/api/user').then(r => r.json()),
+      fetch('/api/guilds').then(r => r.json())
+    ]);
+
+    document.getElementById('userName').textContent = userRes.username;
+    document.getElementById('userAvatar').src = userRes.avatar
+      ? `https://cdn.discordapp.com/avatars/${userRes.id}/${userRes.avatar}.png?size=32`
+      : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+    allGuilds = guildsRes;
+    renderGuilds(guildsRes);
+  } catch {
+    document.getElementById('guildsContainer').innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Error cargando servidores</p></div>';
+  }
+}
+
+function renderGuilds(guilds) {
+  const container = document.getElementById('guildsContainer');
+  if (!guilds.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>No se encontraron servidores</p><small>Necesitas tener permisos de administrador</small></div>`;
+    container.className = 'empty';
+    return;
+  }
+  container.className = 'guilds-grid';
+  container.innerHTML = guilds.map(g => `
+    <a href="/dashboard/${g.id}" class="guild-card">
+      ${g.iconURL
+        ? `<img src="${g.iconURL}" alt="${g.name}" class="guild-icon" style="display:flex;">`
+        : `<div class="guild-icon">${g.name.charAt(0).toUpperCase()}</div>`
+      }
+      <div class="guild-name">${g.name}</div>
+      <div class="guild-id">${g.id}</div>
+      <span class="guild-arrow">→</span>
+    </a>
+  `).join('');
+}
+
+function filterGuilds() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  renderGuilds(allGuilds.filter(g => g.name.toLowerCase().includes(q) || g.id.includes(q)));
+}
+
+loadData();
+</script>
+</body>
+</html>
